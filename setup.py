@@ -17,7 +17,7 @@ setup_requirements = ['pandas', 'numpy', 'plotly', 'viewclust']
 
 test_requirements = ['pandas', 'numpy', 'plotly', 'viewclust']
 
-VERSIONFILE = "viewclust/_version.py"
+VERSIONFILE = "viewclust_vis/_version.py"
 VERSTRLINE = open(VERSIONFILE, "rt").read()
 VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
 MO = re.search(VSRE, VERSTRLINE, re.M)
