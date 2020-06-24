@@ -2,6 +2,7 @@
 
 """The setup script."""
 
+import re
 from setuptools import setup, find_packages
 
 with open('README.rst') as readme_file:
@@ -10,11 +11,20 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['Click>=7.0', ]
+requirements = ['pandas', 'numpy', 'plotly', 'viewclust']
 
-setup_requirements = [ ]
+setup_requirements = ['pandas', 'numpy', 'plotly', 'viewclust']
 
-test_requirements = [ ]
+test_requirements = ['pandas', 'numpy', 'plotly', 'viewclust']
+
+VERSIONFILE = "viewclust/_version.py"
+VERSTRLINE = open(VERSIONFILE, "rt").read()
+VSRE = r"^__version__ = ['\"]([^'\"]*)['\"]"
+MO = re.search(VSRE, VERSTRLINE, re.M)
+if MO:
+    VERSTR = MO.group(1)
+else:
+    raise RuntimeError("Unable to find version string in %s." % (VERSIONFILE,))
 
 setup(
     author="Tyler Collins",
@@ -26,17 +36,10 @@ setup(
         'License :: OSI Approved :: MIT License',
         'Natural Language :: English',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
     description="Extension to ViewClust containing dashboard submodules and more.",
-    entry_points={
-        'console_scripts': [
-            'viewclust_vis=viewclust_vis.cli:main',
-        ],
-    },
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
@@ -48,6 +51,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/Andesha/viewclust_vis',
-    version='0.1.0',
+    version=VERSTR,
     zip_safe=False,
 )
