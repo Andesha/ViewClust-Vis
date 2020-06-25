@@ -166,7 +166,7 @@ def run_apidoc(_):
     cur_dir = os.path.abspath(os.path.dirname(__file__))
     sys.path.append(parentFolder)
     # change "backend" to your module name
-    module = os.path.join(parentFolder,'viewclust')
+    module = os.path.join(parentFolder,'viewclust_vis')
     output_path = os.path.join(cur_dir, 'api')
     # print(output_path)
     main(['-e','-f','-o', output_path, module])
