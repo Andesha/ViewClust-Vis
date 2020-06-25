@@ -26,12 +26,27 @@ Extension to ViewClust containing dashboard submodules and more.
 Features
 --------
 
-* TODO
+* Complete user account usage diagnosis sweet
+* All users information package
+* Partition perfomance dashboards
+* More!
 
 Credits
 -------
+
+* `Tyler Collins`_
+* `James Desjardins`_
+
+Developed for:
+
+* SHARCNET_
+* `Compute Canada`_
 
 This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
 
 .. _Cookiecutter: https://github.com/audreyr/cookiecutter
 .. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
+.. _`Tyler Collins`: https://github.com/Andesha
+.. _`James Desjardins`: https://github.com/jadesjardins
+.. _SHARCNET: https://www.sharcnet.ca/my/front/
+.. _`Compute Canada`: https://www.computecanada.ca/
