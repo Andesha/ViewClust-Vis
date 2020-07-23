@@ -8,6 +8,8 @@ from pathlib import Path
 import plotly.express as px
 import plotly.graph_objects as go
 
+import os
+
 import viewclust as vc
 from viewclust import slurm
 from viewclust.target_series import target_series
@@ -15,7 +17,7 @@ from viewclust.target_series import target_series
 from viewclust_vis.job_stack import job_stack
 
 def show_job_use(account, target, d_from,
-d_to='', d_from_drop='', out_path='',
+d_to='', d_from_drop='', out_path='',use_unit='',
 plot_jobstack=True, plot_insta=True, plot_cumu=True, plot_mem_delta=False, plot_start_wait=False):
 
     """Accepts an account name and query period to generate job usage summary figures.
@@ -35,6 +37,9 @@ plot_jobstack=True, plot_insta=True, plot_cumu=True, plot_mem_delta=False, plot_
         Time prior to which to ingnore jobs of any state, e.g. '2019-12-01T00:00:00'.
     out_path: date str, optional
         Name of path in which to place the output figure files. Defaults to current path
+    use_unit: str, optional
+        Usage unit to examine. One of: {'cpu', 'cpu-eqv', 'gpu', 'gpu-eqv'}.
+        Defaults to 'cpu', or determine from account suffix (if *_cpu, use_unit='cpu-eqv', if *_cpu, use_unit='cpu-eqv', else use_unit = 'cpu).
     plot_jobstack: boolean, optional
         If True plot the jobstack figure. Note that for large job record data frames the jobstack figure 
         can take some time to produce. The jobstack figure is a representation of the time periods and 
@@ -66,6 +71,24 @@ plot_jobstack=True, plot_insta=True, plot_cumu=True, plot_mem_delta=False, plot_
         safe_folder += '/'
     Path(safe_folder).mkdir(parents=True, exist_ok=True)
 
+    if use_unit == '':
+        print('No use_unit specified... determining default.')
+        if account[-4:] == '_cpu':
+            print('Account name ends with "_cpu" suffix..setting use_unit to "cpu-eqv".')
+            use_unit = 'cpu-eqv';
+        elif account[-4:] == '_gpu':
+            myhost = os.uname()[1]
+            if myhost[:5] == 'cedar':
+                print('Account name ends with "_gpu" suffix.. and host is "cedar"... setting use_unit to "gpu-eqv-cdr".')
+                use_unit = 'gpu-eqv-cdr';
+            else:
+                print('Account name ends with "_gpu" suffix..setting use_unit to "gpu-eqv".')
+                use_unit = 'gpu-eqv';
+        else:
+            print('Cannot determine appropriate default from account name suffix..setting use_unit to "cpu".')
+            use_unit = 'cpu'
+            
+
     # Perform ES job record query
     job_frame = slurm.sacct_jobs(account, d_from, d_to=d_to)
     
@@ -80,15 +103,15 @@ plot_jobstack=True, plot_insta=True, plot_cumu=True, plot_mem_delta=False, plot_
     #print(job_frame)
 
     # Compute usage in terms of core equiv
-    clust_target, queued, running, delta = vc.job_use(job_frame, d_from, target, d_to = d_to, use_unit = 'cpu-eqv')#,
+    clust_target, queued, running, delta = vc.job_use(job_frame, d_from, target, d_to = d_to, use_unit = use_unit)#,
     #serialize_queued = safe_folder + account + '_queued.pkl',
     #serialize_running = safe_folder + account + '_running.pkl')
 
-    user_running_cat = vc.get_users_run(job_frame, d_from, target, d_to=d_to, use_unit='cpu-eqv')#,
+    user_running_cat = vc.get_users_run(job_frame, d_from, target, d_to=d_to, use_unit=use_unit)#,
     #serialize_running = safe_folder + account + '_user_running.pkl')
 
     #job_frame_submit = vc.job_submit_start(job_frame)
-    _,_,submit_run,_ = vc.job_use(job_frame, d_from, target, d_to = d_to, use_unit = 'cpu-eqv',insta_use = True)#,
+    _,_,submit_run,_ = vc.job_use(job_frame, d_from, target, d_to = d_to, use_unit = use_unit, insta_use = True)#,
     #serialize_running = out_path + account + '_submit_run.pkl')
 
     queued=queued[d_from:d_to]
