@@ -2,6 +2,12 @@
 History
 =======
 
+0.2.2 (2020-07-25)
+------------------
+
+* Reworked default use_unit queries - tries to infer proper use_unit from context!
+
+
 0.2.1 (2020-07-15)
 ------------------
 
