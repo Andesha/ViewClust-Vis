@@ -26,7 +26,7 @@ Extension to ViewClust containing dashboard submodules and more.
 Features
 --------
 
-* Complete user account usage diagnosis sweet
+* Complete user account usage diagnosis suite
 * All users information package
 * Partition perfomance dashboards
 * More!
