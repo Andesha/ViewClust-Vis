@@ -1,6 +1,7 @@
 from pathlib import Path
 import viewclust as vc
 
+
 def use_suite(clust_info, cores_queued, cores_running, folder, submit_run=[]):
     """Creates a folder of a given name and creates figures inside of it.
 
@@ -10,11 +11,14 @@ def use_suite(clust_info, cores_queued, cores_running, folder, submit_run=[]):
     Parameters
     -------
     clust_info: DataFrame
-        Frame which represents the cluster state at given time intervals. See jobUse.
+        Frame which represents the cluster state at given time intervals.
+        See job_use from viewclust.
     cores_queued: array_like of DataFrame
-        Series displaying queued resources at a particular time. See jobUse.
+        Series displaying queued resources at a particular time.
+        See job_use from viewclust.
     cores_running: array_like of DataFrame
-        Series displaying running resources at a particular time. See jobUse.
+        Series displaying running resources at a particular time.
+        See job_use from viewclust.
     Folder: str
         Folder to place generated figures inside of.
         Typically an account name.
@@ -36,5 +40,8 @@ def use_suite(clust_info, cores_queued, cores_running, folder, submit_run=[]):
     Path(safe_folder).mkdir(parents=True, exist_ok=True)
 
     # Add more to the suite as you like
-    vc.cumu_plot(clust_info, cores_queued, cores_running, fig_out=safe_folder+'cumu_plot.html', submit_run=submit_run)
-    vc.insta_plot(clust_info, cores_queued, cores_running, fig_out=safe_folder+'insta_plot.html', submit_run=submit_run)
+    vc.cumu_plot(clust_info, cores_queued, cores_running,
+                 fig_out=safe_folder + 'cumu_plot.html', submit_run=submit_run)
+    vc.insta_plot(clust_info, cores_queued, cores_running,
+                  fig_out=safe_folder + 'insta_plot.html',
+                  submit_run=submit_run)

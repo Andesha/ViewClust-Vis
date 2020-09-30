@@ -2,23 +2,24 @@ import numpy as np
 import plotly.graph_objects as go
 import sys
 
+
 def cumu_plot(clust_info, cores_queued, cores_running, resample_str='',
-              fig_out='', y_label='Usage', fig_title='', query_bounds=True, running=[], queued=[], submit_run=[], submit_req=[], user_run=[],
+              fig_out='', y_label='Usage', fig_title='', query_bounds=True,
+              running=[], queued=[], submit_run=[], submit_req=[], user_run=[],
               plot_queued=False):
     """Cumulative usage plot.
-
-    This function is deprecated as of v0.3.0.
-    
-    Support continues in the ViewClust-Vis package.
 
     Parameters
     -------
     clust_info: DataFrame
-        Frame which represents the cluster state at given time intervals. See jobUse.
+        Frame which represents the cluster state at given time intervals.
+        See job_use from viewclust.
     cores_queued: array_like of DataFrame
-        Series displaying queued resources at a particular time. See jobUse.
+        Series displaying queued resources at a particular time.
+        See job_use from viewclust.
     cores_running: array_like of DataFrame
-        Series displaying running resources at a particular time. See jobUse.
+        Series displaying running resources at a particular time.
+        See job_use from viewclust.
     resample_str: pandas freq str, optional
         Defaults to empty, meaning no resampling. Passing this parameter
         does not do sanity checking and will only run the below code example.
@@ -35,19 +36,19 @@ def cumu_plot(clust_info, cores_queued, cores_running, resample_str='',
         Defaults to true.
     submit_run: DataFrame, optional
         Draws a red line representing what would usage have looked like
-        if jobs had started instantly and ran for their elapsed duration. Allows for easier interpretation of
+        if jobs had started instantly and ran for their elapsed duration.
+        Allows for easier interpretation of
         the queued series. Defaults to not plotting.
     submit_req: DataFrame, optional
         Draws an orange line representing what usage would have looked like
-        if jobs had started instantly and ran for their requested duration. Allows for easier interpretation of
+        if jobs had started instantly and ran for their requested duration.
+        Allows for easier interpretation of
         the queued series. Defaults to not plotting.
 
     See Also
     -------
     jobUse: Generates the input frames for this function.
     """
-
-    print('This function is deprecated as of v0.3.0.\nSupport continues in the ViewClust-Vis package.', file=sys.stderr)
 
     # Avoid recalculations via these:
     clust_sum = np.cumsum(clust_info).divide(len(clust_info))
@@ -67,17 +68,18 @@ def cumu_plot(clust_info, cores_queued, cores_running, resample_str='',
                              name='Allocation',
                              fillcolor='rgba(180, 180, 180, .3)'))
 
-    if len(user_run)>0:
+    if len(user_run) > 0:
         for user in user_run:
             fig.add_trace(go.Scatter(
-            x=user_run.index,y=np.cumsum(user_run[user]).divide(len(user_run[user])),
-            line=dict(width=0),
-            hoverinfo='x+y',
-            opacity=.1,
-            mode='none',
-            name=user,
-            stackgroup='use' # define stack group
-            ))
+                x=user_run.index,
+                y=np.cumsum(user_run[user]).divide(len(user_run[user])),
+                line=dict(width=0),
+                hoverinfo='x+y',
+                opacity=.1,
+                mode='none',
+                name=user,
+                stackgroup='use'  # define stack group
+                ))
 
     if plot_queued:
         fig.add_trace(go.Scatter(x=cores_queued.index,
@@ -92,10 +94,11 @@ def cumu_plot(clust_info, cores_queued, cores_running, resample_str='',
             submit_run_tmp = submit_run_tmp.resample(resample_str).sum()
 
         fig.add_trace(go.Scatter(x=submit_run.index,
-                                 y=np.cumsum(submit_run_tmp).divide(len(submit_run_tmp)),
-                             	 mode='lines',
-                             	 name='Resources run at submit (elapsed)',
-                             	 marker_color='rgba(220,80,80, .8)'))
+                                 y=np.cumsum(submit_run_tmp).divide(
+                                     len(submit_run_tmp)),
+                                 mode='lines',
+                                 name='Resources run at submit (elapsed)',
+                                 marker_color='rgba(220,80,80, .8)'))
 
     if len(submit_req) > 0:
         submit_req_tmp = submit_req.copy()
@@ -103,10 +106,11 @@ def cumu_plot(clust_info, cores_queued, cores_running, resample_str='',
             submit_req_tmp = submit_req_tmp.resample(resample_str).sum()
 
         fig.add_trace(go.Scatter(x=submit_req_tmp.index,
-                                y=np.cumsum(submit_req_tmp).divide(len(submit_req_tmp)),
-                             	mode='lines',
-                             	name='Resources run at submit (timelimit)',
-                             	marker_color='rgba(220,160,00, .8)'))
+                                 y=np.cumsum(submit_req_tmp).divide(
+                                     len(submit_req_tmp)),
+                                 mode='lines',
+                                 name='Resources run at submit (timelimit)',
+                                 marker_color='rgba(220,160,00, .8)'))
 
     fig.add_trace(go.Scatter(x=cores_running.index,
                              y=run_sum,

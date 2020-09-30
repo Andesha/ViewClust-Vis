@@ -1,7 +1,10 @@
 import plotly.graph_objects as go
 
-def job_stack(jobs, use_unit='cpu', fig_out='', plot_title='', query_bounds=True):
-    """Create job stack figure based on a given DataFrame and specified use unit.
+
+def job_stack(jobs, use_unit='cpu', fig_out='', plot_title='',
+              query_bounds=True):
+    """Create job stack figure based on a given DataFrame and
+    specified use unit.
 
     Each job is a rectangle, where the height of the rectangle is based on
     the amount of resources that are being examined. Further, all three job
@@ -30,7 +33,8 @@ def job_stack(jobs, use_unit='cpu', fig_out='', plot_title='', query_bounds=True
         jobs['mem_scale'] = jobs['mem'] / 4000.0
         jobs['use_unit'] = jobs[['mem_scale', 'reqcpus']].max(axis=1)
     elif use_unit == 'gpu':
-        jobs['ngpus'] = jobs['r_tres'].str.extract(r'(\d+)(?!.*\d)').astype('float')
+        jobs['ngpus'] = jobs['r_tres'].str.extract(
+            r'(\d+)(?!.*\d)').astype('float')
         jobs['use_unit'] = jobs['ngpus']
     else:
         print('gpu equiv to be supported soon')
@@ -46,10 +50,12 @@ def job_stack(jobs, use_unit='cpu', fig_out='', plot_title='', query_bounds=True
     # TODO: Fix this below section into frame calls
     y_cumu = []
     for _, row in jobs.iterrows():
-        c_queue = [row['submit'], row['start'], row['start'], row['submit'], row['submit'], None]
+        c_queue = [row['submit'], row['start'], row['start'],
+                   row['submit'], row['submit'], None]
         x_queue = x_queue + c_queue
 
-        c_run = [row['start'], row['end'], row['end'], row['start'], row['start'], None]
+        c_run = [row['start'], row['end'], row['end'], row['start'],
+                 row['start'], None]
         x_run = x_run + c_run
 
         c_req = [row['end'], row['start']+row['timelimit'],

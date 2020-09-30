@@ -1,7 +1,4 @@
-#import numpy as np
 import pandas as pd
-#import ccmnt
-#import pickle
 import datetime as dt
 from datetime import datetime
 from pathlib import Path
@@ -18,45 +15,62 @@ from viewclust_vis.job_stack import job_stack
 from viewclust_vis.insta_plot import insta_plot
 from viewclust_vis.cumu_plot import cumu_plot
 
-def show_job_use(account, target, d_from,
-d_to='', d_from_drop='', out_path='',use_unit='',
-plot_jobstack=True, plot_insta=True, plot_cumu=True, plot_mem_delta=False, plot_start_wait=False, plot_wait_viol=False, plot_start_runtime=False, plot_runtime_viol=False):
 
-    """Accepts an account name and query period to generate job usage summary figures.
+def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
+                 use_unit='', plot_jobstack=True, plot_insta=True,
+                 plot_cumu=True, plot_mem_delta=False, plot_start_wait=False,
+                 lot_wait_viol=False, plot_start_runtime=False,
+                 plot_runtime_viol=False):
+
+    """Accepts an account name and query period to generate
+    job usage summary figures.
 
 
     Parameters
     -------
     account: string
-        Name of account for which to query job records (note that Compute Canada systems expect a _cpu or _gpu suffix).
+        Name of account for which to query job records
+        (note that Compute Canada systems expect a _cpu or _gpu suffix).
     target: int-like
-        The target share value for the account on the system (typically expressed as "cores" or "core-equivalents").
+        The target share value for the account on the system
+        (typically expressed as "cores" or "core-equivalents").
     d_from: date str
         Beginning of the query period, e.g. '2019-04-01T00:00:00'.
     d_to: date str, optional
-        End of the query period, e.g. '2020-01-01T00:00:00'. Defaults to now if empty.
+        End of the query period, e.g. '2020-01-01T00:00:00'.
+        Defaults to now if empty.
     d_from_drop: date str, optional
-        Time prior to which to ingnore jobs of any state, e.g. '2019-12-01T00:00:00'.
+        Time prior to which to ingnore jobs of any state,
+        e.g. '2019-12-01T00:00:00'.
     out_path: date str, optional
-        Name of path in which to place the output figure files. Defaults to current path
+        Name of path in which to place the output figure files.
+        Defaults to current path
     use_unit: str, optional
         Usage unit to examine. One of: {'cpu', 'cpu-eqv', 'gpu', 'gpu-eqv'}.
-        Defaults to 'cpu', or determine from account suffix (if *_cpu, use_unit='cpu-eqv', if *_cpu, use_unit='cpu-eqv', else use_unit = 'cpu).
+        Defaults to 'cpu', or determine from account suffix
+        (if *_cpu, use_unit='cpu-eqv', if *_cpu, use_unit='cpu-eqv',
+            else use_unit = 'cpu).
     plot_jobstack: boolean, optional
-        If True plot the jobstack figure. Note that for large job record data frames the jobstack figure 
-        can take some time to produce. The jobstack figure is a representation of the time periods and 
+        If True plot the jobstack figure.
+        Note that for large job record data frames the jobstack figure
+        can take some time to produce.
+        The jobstack figure is a representation of the time periods and
         and resource size of each job in a job record query. Defaults to True.
     plot_insta: boolean, optional
-        If True plot the insta_plot figure. The insta_plot is a display of the job record usage measurement
+        If True plot the insta_plot figure. The insta_plot is a display of
+        the job record usage measurement
         at each time point over the query period. Defaults to True.
     plot_cumu: boolean, optional
-        If True plot the cumu_plot figure. The cumu_plot is a display of the cumulative job record usage measurement
+        If True plot the cumu_plot figure. The cumu_plot is a display of the
+        cumulative job record usage measurement
         at each time point over the query period. Defaults to True.
     plot_mem_delta: boolean, optional
-        If True plot the mem_delta figure. The mem_delta is a display memory requested (allocated) to each job as well
+        If True plot the mem_delta figure. The mem_delta is a display memory
+        requested (allocated) to each job as well
         as its peak polled memory (MaxRSS). Defaults to False.
     plot_start_wait: boolean, optional
-        If True create the start-time by wait-hours scatter plot figure. Defaults to False.
+        If True create the start-time by wait-hours scatter plot figure.
+        Defaults to False.
 
     Output
     -------
@@ -76,89 +90,87 @@ plot_jobstack=True, plot_insta=True, plot_cumu=True, plot_mem_delta=False, plot_
     if use_unit == '':
         print('No use_unit specified... determining default.')
         if account[-4:] == '_cpu':
-            print('Account name ends with "_cpu" suffix..setting use_unit to "cpu-eqv".')
-            use_unit = 'cpu-eqv';
+            print('Account name ends with "_cpu" suffix' +
+                  ' ... setting use_unit to "cpu-eqv".')
+            use_unit = 'cpu-eqv'
         elif account[-4:] == '_gpu':
             myhost = os.uname()[1]
             if myhost[:5] == 'cedar':
-                print('Account name ends with "_gpu" suffix.. and host is "cedar"... setting use_unit to "gpu-eqv-cdr".')
-                use_unit = 'gpu-eqv-cdr';
+                print('Account name ends with "_gpu" suffix.. and host is ' +
+                      '"cedar"... setting use_unit to "gpu-eqv-cdr".')
+                use_unit = 'gpu-eqv-cdr'
             else:
-                print('Account name ends with "_gpu" suffix..setting use_unit to "gpu-eqv".')
-                use_unit = 'gpu-eqv';
+                print('Account name ends with "_gpu" suffix setting use_unit' +
+                      '"gpu-eqv".')
+                use_unit = 'gpu-eqv'
         else:
-            print('Cannot determine appropriate default from account name suffix..setting use_unit to "cpu".')
+            print('Cannot determine appropriate default from account name ' +
+                  'suffix..setting use_unit to "cpu".')
             use_unit = 'cpu'
-            
 
     # Perform ES job record query
     job_frame = slurm.sacct_jobs(account, d_from, d_to=d_to)
-    
-#    if d_from_drop != '':
-#        job_frame = job_frame[job_frame['start'] > d_from_drop]
-
-    #job_frame = pd.read_pickle(out_path + account +'_job_frame.pkl')
 
     print('Number of josb in query: '+str(len(job_frame)))
-    #print(job_frame)
     job_frame['waittime'] = job_frame['start'] - job_frame['submit']
     job_frame['runtime'] = job_frame['end'] - job_frame['start']
-    #print(job_frame)
 
     # Compute usage in terms of core equiv
-    clust_target, queued, running, delta = vc.job_use(job_frame, d_from, target, d_to = d_to, use_unit = use_unit)#,
-    _,_,run_running,_ = vc.job_use(job_frame, d_from, target, d_to = d_to, use_unit = use_unit, job_state='running')#,
-    _,_,q_queued,_ = vc.job_use(job_frame, d_from, target, d_to = d_to, use_unit = use_unit, job_state='queued')#,
-    #serialize_queued = safe_folder + account + '_queued.pkl',
-    #serialize_running = safe_folder + account + '_running.pkl')
+    clust_target, queued, running, delta = vc.job_use(job_frame, d_from,
+                                                      target, d_to=d_to,
+                                                      use_unit=use_unit)
+    _, _, run_running, _ = vc.job_use(job_frame, d_from, target, d_to=d_to,
+                                      use_unit=use_unit, job_state='running')
+    _, _, q_queued, _ = vc.job_use(job_frame, d_from, target, d_to=d_to,
+                                   use_unit=use_unit, job_state='queued')
 
-    user_running_cat = vc.get_users_run(job_frame, d_from, target, d_to=d_to, use_unit=use_unit)#,
-    #serialize_running = safe_folder + account + '_user_running.pkl')
+    user_running_cat = vc.get_users_run(job_frame, d_from, target, d_to=d_to,
+                                        use_unit=use_unit)
 
-    #job_frame_submit = vc.job_submit_start(job_frame)
-    _,_,submit_run,_ = vc.job_use(job_frame, d_from, target, d_to = d_to, use_unit = use_unit, time_ref = 'sub')#,
-    #serialize_running = out_path + account + '_submit_run.pkl')
+    _, _, submit_run, _ = vc.job_use(job_frame, d_from, target, d_to=d_to,
+                                     use_unit=use_unit, time_ref='sub')
 
-    #job_frame_submit = vc.job_submit_start(job_frame)
-    _,_,submit_req,_ = vc.job_use(job_frame, d_from, target, d_to = d_to, use_unit = use_unit, time_ref = 'sub+req')#,
-    #serialize_running = out_path + account + '_submit_run.pkl')
+    _, _, submit_req, _ = vc.job_use(job_frame, d_from, target, d_to=d_to,
+                                     use_unit=use_unit, time_ref='sub+req')
 
-    job_frame['waittime_hours']=job_frame['waittime'].dt.total_seconds()/3600
-    job_frame['runtime_hours']=job_frame['runtime'].dt.total_seconds()/3600
+    job_frame['waittime_hours'] = job_frame['waittime'].dt.total_seconds()/3600
+    job_frame['runtime_hours'] = job_frame['runtime'].dt.total_seconds()/3600
 
-    job_frame['timelimit_hours']=job_frame['timelimit'].dt.total_seconds()/3600
+    job_frame['timelimit_hours'] = job_frame[
+        'timelimit'].dt.total_seconds()/3600
 
     if plot_jobstack:
-        job_stack(job_frame, use_unit = 'cpu-eqv', fig_out = safe_folder + account + '_jobstack.html')
+        job_stack(job_frame, use_unit='cpu-eqv',
+                  fig_out=safe_folder + account + '_jobstack.html')
 
     # Add more to the suite as you like
     if plot_insta:
-        insta_plot(clust_target, queued, running, 
-                        fig_out=safe_folder+account+'_'+'insta_plot.html', 
-                        user_run=user_running_cat,
-                        submit_run=submit_run, 
-                        submit_req=submit_req,
-                        running=run_running, 
-                        queued = q_queued,
-                        query_bounds=True)
-    
-    if plot_cumu:
-        cumu_plot(clust_target, queued, running, 
-                        fig_out=safe_folder+account+'_'+'cumu_plot.html', 
-                        user_run=user_running_cat,
-                        submit_run=submit_run, 
-                        query_bounds=False)
+        insta_plot(clust_target, queued, running,
+                   fig_out=safe_folder+account+'_'+'insta_plot.html',
+                   user_run=user_running_cat
+                   submit_run=submit_run,
+                   submit_req=submit_req,
+                   running=run_running,
+                   queued=q_queued,
+                   query_bounds=True)
 
- 
+    if plot_cumu:
+        cumu_plot(clust_target, queued, running,
+                  fig_out=safe_folder+account+'_'+'cumu_plot.html',
+                  user_run=user_running_cat,
+                  submit_run=submit_run,
+                  query_bounds=False)
+
     if plot_mem_delta:
-        slurm.mem_info(d_from, account, fig_out=safe_folder + account + '_mem_delta.html')
+        slurm.mem_info(d_from, account,
+                       fig_out=safe_folder + account + '_mem_delta.html')
 
     if plot_start_wait:
         fig_scat = px.scatter(job_frame,
-                        x='start',
-                        y='waittime_hours',
-                        color="partition",
-                        opacity=.3)
+                              x='start',
+                              y='waittime_hours',
+                              color="partition",
+                              opacity=.3)
         fig_scat.update_layout(
             title=go.layout.Title(
                 text="Job scatter: "
@@ -184,11 +196,12 @@ plot_jobstack=True, plot_insta=True, plot_cumu=True, plot_mem_delta=False, plot_
                 )
             )
         )
-        fig_scat.write_html(safe_folder + account +'_start_wait.html')
+        fig_scat.write_html(safe_folder + account + '_start_wait.html')
 
     if plot_wait_viol:
-        fig_viol = px.violin(job_frame, y="waittime_hours", color="partition", box=True, points="all",
-              hover_data=job_frame.columns)
+        fig_viol = px.violin(job_frame, y="waittime_hours", color="partition",
+                             box=True, points="all",
+                             hover_data=job_frame.columns)
 
         fig_viol.update_layout(
             title=go.layout.Title(
@@ -215,14 +228,14 @@ plot_jobstack=True, plot_insta=True, plot_cumu=True, plot_mem_delta=False, plot_
                 )
             )
         )
-        fig_viol.write_html(safe_folder + account +'_wait_viol.html')
+        fig_viol.write_html(safe_folder + account + '_wait_viol.html')
 
     if plot_start_runtime:
         fig_scat = px.scatter(job_frame,
-                        x='start',
-                        y='runtime_hours',
-                        color="partition",
-                        opacity=.3)
+                              x='start',
+                              y='runtime_hours',
+                              color="partition",
+                              opacity=.3)
         fig_scat.update_layout(
             title=go.layout.Title(
                 text="Job scatter: "
@@ -248,11 +261,12 @@ plot_jobstack=True, plot_insta=True, plot_cumu=True, plot_mem_delta=False, plot_
                 )
             )
         )
-        fig_scat.write_html(safe_folder + account +'_start_runtime.html')
+        fig_scat.write_html(safe_folder + account + '_start_runtime.html')
 
     if plot_runtime_viol:
-        fig_viol = px.violin(job_frame, y="runtime_hours", color="partition", box=True, points="all",
-              hover_data=job_frame.columns)
+        fig_viol = px.violin(job_frame, y="runtime_hours", color="partition",
+                             box=True, points="all",
+                             hover_data=job_frame.columns)
 
         fig_viol.update_layout(
             title=go.layout.Title(
@@ -279,27 +293,6 @@ plot_jobstack=True, plot_insta=True, plot_cumu=True, plot_mem_delta=False, plot_
                 )
             )
         )
-        fig_viol.write_html(safe_folder + account +'_runtime_viol.html')
-
+        fig_viol.write_html(safe_folder + account + '_runtime_viol.html')
 
     return job_frame
-
-    #fig = px.scatter(job_frame,
-    #                x='waittime_hours',
-    #                y='priority',
-    #                color="partition",
-    #                marginal_x='histogram',
-    #                marginal_y='histogram')
-    #fig.write_html(safe_folder + account +'_wait_priority.html')
-
-    #fig = px.scatter(job_frame,
-    #                x='start',
-    #                y='priority',
-    #                color="partition",
-    #                marginal_x='histogram',
-    #                marginal_y='histogram')
-    #fig.write_html(safe_folder + account +'_start_priority.html')
-
-
-
- 

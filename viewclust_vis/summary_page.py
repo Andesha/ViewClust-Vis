@@ -1,10 +1,13 @@
 from datetime import datetime
 import glob
 
-def summary_page(folder_list, page_name):
-    """Builds an html page containing links to all html files in a list of folders.
 
-    There's probably a library to do this properly but I just wanted something low level for now.
+def summary_page(folder_list, page_name):
+    """Builds an html page containing links to all html files
+    in a list of folders.
+
+    There's probably a library to do this properly but I just wanted
+    something low level for now.
 
     Parameters
     -------
@@ -23,7 +26,7 @@ def summary_page(folder_list, page_name):
     <html>
     <body>
 
-    <h1>ViewClust Summary Page: """ + str(datetime.now())+  """</h1> """
+    <h1>ViewClust Summary Page: """ + str(datetime.now()) + """</h1> """
 
     for folder in folder_list:
         out_page += '<h2>' + folder + '</h2>'
