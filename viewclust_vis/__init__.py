@@ -12,3 +12,5 @@ from .summary_page import summary_page
 from .use_suite import use_suite
 from .viol_plot import viol_plot
 from .show_job_use import show_job_use
+from .insta_plot import insta_plot
+from .cumu_plot import cumu_plot
