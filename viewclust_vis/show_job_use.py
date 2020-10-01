@@ -19,7 +19,7 @@ from viewclust_vis.cumu_plot import cumu_plot
 def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
                  use_unit='', plot_jobstack=True, plot_insta=True,
                  plot_cumu=True, plot_mem_delta=False, plot_start_wait=False,
-                 lot_wait_viol=False, plot_start_runtime=False,
+                 plot_wait_viol=False, plot_start_runtime=False,
                  plot_runtime_viol=False):
 
     """Accepts an account name and query period to generate
@@ -147,7 +147,7 @@ def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
     if plot_insta:
         insta_plot(clust_target, queued, running,
                    fig_out=safe_folder+account+'_'+'insta_plot.html',
-                   user_run=user_running_cat
+                   user_run=user_running_cat,
                    submit_run=submit_run,
                    submit_req=submit_req,
                    running=run_running,
