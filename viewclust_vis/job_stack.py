@@ -138,3 +138,5 @@ def job_stack(jobs, use_unit='cpu', fig_out='', plot_title='',
 
     if fig_out != '':
         fig.write_html(fig_out)
+
+    return fig

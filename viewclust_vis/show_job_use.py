@@ -20,7 +20,7 @@ def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
                  use_unit='', plot_jobstack=True, plot_insta=True,
                  plot_cumu=True, plot_mem_delta=False, plot_start_wait=False,
                  plot_wait_viol=False, plot_start_runtime=False,
-                 plot_runtime_viol=False):
+                 plot_runtime_viol=False, override_frame=[]):
 
     """Accepts an account name and query period to generate
     job usage summary figures.
@@ -71,6 +71,9 @@ def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
     plot_start_wait: boolean, optional
         If True create the start-time by wait-hours scatter plot figure.
         Defaults to False.
+    override_frame: Dataframe
+        Defaults to empty.
+        If non empty, overrides the sacct call with the supplied Dataframe
 
     Output
     -------
@@ -88,7 +91,7 @@ def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
     Path(safe_folder).mkdir(parents=True, exist_ok=True)
 
     if use_unit == '':
-        print('No use_unit specified... determining default.')
+        print('No use_unit specified... determining default via: ', account)
         if account[-4:] == '_cpu':
             print('Account name ends with "_cpu" suffix' +
                   ' ... setting use_unit to "cpu-eqv".')
@@ -109,9 +112,15 @@ def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
             use_unit = 'cpu'
 
     # Perform ES job record query
-    job_frame = slurm.sacct_jobs(account, d_from, d_to=d_to)
+    if len(override_frame) == 0:
+        job_frame = slurm.sacct_jobs(account, d_from, d_to=d_to)
+    else:
+        job_frame = override_frame
 
-    print('Number of josb in query: '+str(len(job_frame)))
+    # Holds figure handles such that they can be returned easily.
+    fig_dict = {}
+
+    print('Number of jobs in query: '+str(len(job_frame)))
     job_frame['waittime'] = job_frame['start'] - job_frame['submit']
     job_frame['runtime'] = job_frame['end'] - job_frame['start']
 
@@ -140,12 +149,13 @@ def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
         'timelimit'].dt.total_seconds()/3600
 
     if plot_jobstack:
-        job_stack(job_frame, use_unit='cpu-eqv',
+        stack_handle = job_stack(job_frame, use_unit='cpu-eqv',
                   fig_out=safe_folder + account + '_jobstack.html')
+        fig_dict['fig_job_stack'] = stack_handle
 
     # Add more to the suite as you like
     if plot_insta:
-        insta_plot(clust_target, queued, running,
+        insta_handle = insta_plot(clust_target, queued, running,
                    fig_out=safe_folder+account+'_'+'insta_plot.html',
                    user_run=user_running_cat,
                    submit_run=submit_run,
@@ -153,17 +163,20 @@ def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
                    running=run_running,
                    queued=q_queued,
                    query_bounds=True)
+        fig_dict['fig_insta_plot'] = insta_handle
 
     if plot_cumu:
-        cumu_plot(clust_target, queued, running,
+        cumu_handle = cumu_plot(clust_target, queued, running,
                   fig_out=safe_folder+account+'_'+'cumu_plot.html',
                   user_run=user_running_cat,
                   submit_run=submit_run,
                   query_bounds=False)
+        fig_dict['fig_cumu_plot'] = cumu_handle
 
     if plot_mem_delta:
-        slurm.mem_info(d_from, account,
+        mem_handle = slurm.mem_info(d_from, account,
                        fig_out=safe_folder + account + '_mem_delta.html')
+        fig_dict['fig_mem_delta'] = mem_handle
 
     if plot_start_wait:
         fig_scat = px.scatter(job_frame,
@@ -197,6 +210,7 @@ def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
             )
         )
         fig_scat.write_html(safe_folder + account + '_start_wait.html')
+        fig_dict['fig_start_wait'] = fig_scat
 
     if plot_wait_viol:
         fig_viol = px.violin(job_frame, y="waittime_hours", color="partition",
@@ -229,6 +243,7 @@ def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
             )
         )
         fig_viol.write_html(safe_folder + account + '_wait_viol.html')
+        fig_dict['fig_wait_viol'] = fig_viol
 
     if plot_start_runtime:
         fig_scat = px.scatter(job_frame,
@@ -262,6 +277,7 @@ def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
             )
         )
         fig_scat.write_html(safe_folder + account + '_start_runtime.html')
+        fig_dict['fig_start_runtime'] = fig_scat
 
     if plot_runtime_viol:
         fig_viol = px.violin(job_frame, y="runtime_hours", color="partition",
@@ -294,5 +310,6 @@ def show_job_use(account, target, d_from, d_to='', d_from_drop='', out_path='',
             )
         )
         fig_viol.write_html(safe_folder + account + '_runtime_viol.html')
+        fig_dict['fig_runtime_viol'] = fig_viol
 
-    return job_frame
+    return fig_dict, job_frame
