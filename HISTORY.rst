@@ -2,6 +2,15 @@
 History
 =======
 
+0.3.0 (2020-10-28)
+------------------
+
+* Updated required version of ViewClust
+* Added numerous figures to show_job_use diagnostics
+* Added ability to return figure handles of all show_job_use figures
+* Linting fixes EVERYWHERE
+
+
 0.2.2 (2020-07-25)
 ------------------
 
