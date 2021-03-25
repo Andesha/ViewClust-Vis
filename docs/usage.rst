@@ -27,3 +27,32 @@ ViewClust-Vis has the following collection of functions:
 * ``summary_page`` (see `docstring <https://github.com/Andesha/ViewClust-Vis/blob/master/viewclust_vis/summary_page.py>`_)
 * ``use_suite`` (see `docstring <https://github.com/Andesha/ViewClust-Vis/blob/master/viewclust_vis/use_suite.py>`_)
 * ``viol_plot`` (see `docstring <https://github.com/Andesha/ViewClust-Vis/blob/master/viewclust_vis/viol_plot.py>`_)
+
+
+Generating Job Instantaneous Usage Plots
+########
+
+To view an insta plot for a specific compute account, the following pattern can be used::
+
+    import viewclust as vc
+    from viewclust import slurm
+    import viewclust_vis as vcv
+
+    # Query parameters
+    account = 'def-tk11br_cpu'
+    d_from = '2021-02-14T00:00:00'
+    d_to = '2021-03-16T00:00:00'
+
+    # DataFrame query
+    jobs_df = slurm.sacct_jobs(account, d_from, d_to=d_to)
+
+    # ViewClust processing
+    target = 50
+    clust_target, queued, running, dist = vc.job_use(jobs_df, d_from, target, d_to=d_to, use_unit='cpu-eqv')
+
+    # ViewClust-Vis rendering
+    vcv.insta_plot(clust_target, queued, running, fig_out=account+'.html')
+
+Things to note about this example:
+
+* The functions use optional arguments. Docstrings are supported in all cases.
