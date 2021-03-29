@@ -119,3 +119,8 @@ The example is provided with comments describing what could be changed here::
         else:
             # Potentially handle differently, but skip for now
             print("  Skipped account: ", account)
+
+Things to note about this example:
+
+* The functions use optional arguments. Docstrings are supported in all cases.
+* To generate the input job frame, we are using an included slurm helper function
