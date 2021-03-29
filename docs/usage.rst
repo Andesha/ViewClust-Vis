@@ -56,3 +56,66 @@ To view an insta plot for a specific compute account, the following pattern can 
 Things to note about this example:
 
 * The functions use optional arguments. Docstrings are supported in all cases.
+
+
+Generating a RAC Summary
+########
+
+This example script is a sample of what could be used to generate a RAC summary. Input in this case is a ``test_accounts.csv`` file with the following header: ``account,core_award,core_eqv_award``.
+
+The example is provided with comments describing what could be changed here::
+
+    # This script is meant to be run via:
+    # python rac_summary.py
+
+    import pandas as pd
+    import viewclust as vc
+    from viewclust import slurm
+    import viewclust_vis as vcv
+
+    # The purpose of this script is to iterate over a file of accounts and
+    # compute usage summaries for each account as well as generate a helper reference page.
+    # Typically would be used as a base structure for iterating over RACs.
+    # For more specific usage, consult docstrings of functions.
+
+    # Query information
+    d_from = '2020-04-01T00:00:00'
+    d_to = '2020-08-31T00:00:00'
+    account_file = 'test_accounts.csv' # of the form: account,core_award,core_eqv_award
+
+    # Read file, assuming headers
+    account_frame = pd.read_csv(account_file)
+
+    # Holders for summary generation
+    dist_list = []
+    account_list = []
+
+    # Not the most quick, but fine for small scale
+    for _, entry in account_frame.iterrows():
+        # Just some quick checking if the account info makes sense
+        # Probably a better way to do this...
+        account = entry['account']
+        if not account.endswith('_cpu'):
+            print('Missing cpu or gpu account suffix. Assuming cpu.')
+            account += '_cpu'
+
+        # Extract target
+        target = entry['core_eqv_award']
+
+        # Perform sacct query
+        print("Running sacct on account ", account, "...")
+        jobs_df = slurm.sacct_jobs(account, d_from, d_to=d_to)
+
+        # Make sure there's actually jobs
+        if jobs_df is not None:
+            # Compute usage in terms of core equiv
+            clust_target, queued, running, dist = vc.job_use(jobs_df, d_from, target, d_to=d_to, use_unit='cpu-eqv')
+            vcv.insta_plot(clust_target, queued, running, fig_out=account+'.html')
+
+            # Hand information off to lists for later if need be
+            account_list.append(account)
+            dist_list.append(dist)
+            print("  Done account: ", account)
+        else:
+            # Potentially handle differently, but skip for now
+            print("  Skipped account: ", account)
