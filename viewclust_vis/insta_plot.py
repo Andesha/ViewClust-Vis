@@ -4,7 +4,7 @@ import sys
 
 def insta_plot(clust_info, cores_queued, cores_running, resample_str='',
                fig_out='', y_label='Usage', fig_title='', query_bounds=True,
-               running=[], queued=[], submit_run=[], submit_req=[],
+               running=[], queued=[], submit_run=[], submit_req=[], eligible_queued=[],
                user_run=[], plot_queued=True):
     """Instantaneous usage plot.
 
@@ -50,6 +50,7 @@ def insta_plot(clust_info, cores_queued, cores_running, resample_str='',
         if jobs had started instantly and ran for their requested duration.
         Allows for easier interpretation of
         the queued series. Defaults to not plotting.
+    eligible_queued:  DataFrame, optional
 
     See Also
     -------
@@ -134,6 +135,17 @@ def insta_plot(clust_info, cores_queued, cores_running, resample_str='',
                                  mode='lines',
                                  name='Resources run at submit (timelimit)',
                                  marker_color='rgba(220,160,00, .8)'))
+
+    if len(eligible_queued) > 0:
+        eligible_queued_tmp = eligible_queued.copy()
+        if resample_str != '':
+            eligible_queued_tmp = eligible_queued_tmp.resample(resample_str).sum()
+
+        fig.add_trace(go.Scatter(x=eligible_queued_tmp.index,
+                                 y=eligible_queued_tmp,
+                                 mode='lines',
+                                 name='Eligible resources queued',
+                                 marker_color='rgba(40,40,40, .6)'))
 
     fig.add_trace(go.Scatter(x=cores_running_tmp.index,
                              y=cores_running_tmp,
