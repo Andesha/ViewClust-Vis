@@ -33,7 +33,7 @@ def job_stack(jobs, use_unit='cpu', fig_out='', plot_title='',
         jobs['mem_scale'] = jobs['mem'] / 4000.0
         jobs['use_unit'] = jobs[['mem_scale', 'reqcpus']].max(axis=1)
     elif use_unit == 'gpu':
-        jobs['ngpus'] = jobs['r_tres'].str.extract(
+        jobs['ngpus'] = jobs['reqtres'].str.extract(
             r'(\d+)(?!.*\d)').astype('float')
         jobs['use_unit'] = jobs['ngpus']
     else:
